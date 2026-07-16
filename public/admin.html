@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Panel | CyberRisk Predictor India</title>
+<meta name="description" content="System administration panel for India Cyber Risk Predictor — manage incidents and security logs."/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="/js/auth.js"></script>
+<script id="tailwind-config">
+  tailwind.config={darkMode:"class",theme:{extend:{
+    colors:{
+      "surface-container-lowest":"#010f1f","surface-container-low":"#0d1c2d","surface-container":"#122131",
+      "surface-container-high":"#1c2b3c","surface-container-highest":"#273647","surface-variant":"#273647",
+      "on-surface":"#d4e4fa","on-surface-variant":"#c6c6cd","outline":"#909097","outline-variant":"#45464d",
+      "primary":"#bec6e0","primary-container":"#0f172a","on-primary":"#283044","on-primary-container":"#798098",
+      "primary-fixed":"#dae2fd","primary-fixed-dim":"#bec6e0","on-primary-fixed":"#131b2e",
+      "secondary":"#4edea3","secondary-container":"#00a572","on-secondary":"#003824","on-secondary-container":"#00311f",
+      "tertiary":"#ffb690","tertiary-container":"#2d0e00","on-tertiary":"#552100","on-tertiary-container":"#d45d00",
+      "error":"#ffb4ab","error-container":"#93000a","on-error":"#690005","on-error-container":"#ffdad6",
+      "surface":"#051424","background":"#051424","on-background":"#d4e4fa","surface-bright":"#2c3a4c",
+    },
+    borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},
+    spacing:{lg:"24px","container-padding":"20px",base:"4px",xl:"32px",xs:"8px",md:"16px",sm:"12px","stack-gap":"16px"},
+    fontFamily:{"headline-lg-mobile":["Inter"],"headline-lg":["Inter"],"body-md":["Inter"],"display-lg":["Inter"],"label-sm":["JetBrains Mono"],"code-xs":["JetBrains Mono"],"title-md":["Inter"]},
+    fontSize:{
+      "headline-lg-mobile":["24px",{lineHeight:"32px",fontWeight:"600"}],
+      "headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.01em",fontWeight:"600"}],
+      "body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],
+      "display-lg":["48px",{lineHeight:"56px",letterSpacing:"-0.02em",fontWeight:"700"}],
+      "label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],
+      "code-xs":["11px",{lineHeight:"14px",fontWeight:"400"}],
+      "title-md":["20px",{lineHeight:"28px",fontWeight:"500"}],
+    }
+  }}}
+</script>
+<style>
+  body{background-color:#051424;color:#d4e4fa;font-family:'Inter',sans-serif;}
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+  .glass-card{background:rgba(18,33,49,0.75);backdrop-filter:blur(12px);border:1px solid #334155;}
+  .custom-scrollbar::-webkit-scrollbar{width:4px;}
+  .custom-scrollbar::-webkit-scrollbar-track{background:#0d1c2d;}
+  .custom-scrollbar::-webkit-scrollbar-thumb{background:#334155;border-radius:10px;}
+  input,select{color-scheme:dark;}
+  input[type="range"]{accent-color:#4edea3;}
+  .skeleton{background:linear-gradient(90deg,#122131 25%,#1c2b3c 50%,#122131 75%);background-size:200%;animation:shimmer 1.5s infinite;}
+  @keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .slide-in{animation:slideIn 0.3s ease forwards;}
+  .modal-backdrop{background:rgba(5,20,36,0.85);backdrop-filter:blur(8px);}
+  .nav-link.active{color:#4edea3;background:rgba(78,222,163,0.1);border-radius:0.5rem;}
+  .toast{position:fixed;bottom:6rem;left:50%;transform:translateX(-50%);z-index:200;padding:0.75rem 1.5rem;border-radius:0.5rem;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.05em;transition:all 0.3s;}
+</style>
+</head>
+<body class="min-h-screen pb-24 md:pb-0 md:pl-16">
+
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-container-padding h-16">
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 bg-secondary-container flex items-center justify-center">
+      <span class="material-symbols-outlined text-on-secondary text-sm" style="font-variation-settings:'FILL' 1;">shield_with_heart</span>
+    </div>
+    <span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">CyberRisk Predictor</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <span id="user-name-chip" class="hidden md:block font-code-xs text-code-xs text-on-surface-variant border border-outline-variant/30 px-sm py-1 rounded-full"></span>
+    <button class="p-2 rounded-full hover:bg-surface-container-high/50 transition-colors text-on-surface-variant">
+      <span class="material-symbols-outlined">notifications</span>
+    </button>
+    <button onclick="Auth.logout()" class="p-2 rounded-full hover:bg-surface-container-high/50 transition-colors text-on-surface-variant" title="Logout">
+      <span class="material-symbols-outlined">logout</span>
+    </button>
+  </div>
+</header>
+
+<!-- Desktop Sidebar -->
+<aside class="hidden md:flex fixed left-0 top-16 bottom-0 w-16 bg-surface-container flex-col items-center py-lg gap-lg border-r border-outline-variant/10">
+  <a class="nav-link p-2 text-on-surface-variant hover:text-primary transition-colors" href="/dashboard"><span class="material-symbols-outlined">home</span></a>
+  <a class="nav-link p-2 text-on-surface-variant hover:text-primary transition-colors" href="/predict"><span class="material-symbols-outlined">analytics</span></a>
+  <div class="mt-auto mb-lg">
+    <a class="nav-link active p-3" href="/admin"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">admin_panel_settings</span></a>
+  </div>
+</aside>
+
+<main class="max-w-7xl mx-auto px-container-padding pt-24 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-xl">
+
+  <!-- Left: Add Incident Form -->
+  <section class="lg:col-span-5 space-y-lg">
+    <div class="flex items-center gap-sm">
+      <div class="w-1 h-8 bg-secondary rounded-full"></div>
+      <h1 class="font-headline-lg text-headline-lg">System Administration</h1>
+    </div>
+
+    <div class="glass-card rounded-xl p-lg relative overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 blur-3xl rounded-full pointer-events-none"></div>
+      <h2 class="font-title-md text-title-md mb-xl text-primary flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary">add_moderator</span>
+        <span id="form-title">Add New Incident</span>
+      </h2>
+
+      <form id="incident-form" class="space-y-md" onsubmit="submitIncident(event)">
+        <input type="hidden" id="edit-id"/>
+        <div class="space-y-xs">
+          <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="inc-title">Incident Title</label>
+          <input id="inc-title" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary/50 focus:border-secondary transition-all placeholder:text-outline/50" placeholder="e.g. Distributed Denial of Service (DDoS)" type="text" required/>
+        </div>
+        <div class="grid grid-cols-2 gap-md">
+          <div class="space-y-xs">
+            <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="inc-date">Incident Date</label>
+            <input id="inc-date" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary/50 focus:border-secondary transition-all" type="date" required/>
+          </div>
+          <div class="space-y-xs">
+            <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="inc-category">Category</label>
+            <select id="inc-category" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary/50 focus:border-secondary transition-all appearance-none">
+              <option>Network Breach</option>
+              <option>Phishing Attack</option>
+              <option>Ransomware</option>
+              <option>Insider Threat</option>
+              <option>DNS Security</option>
+              <option>Social Engineering</option>
+            </select>
+          </div>
+        </div>
+        <div class="space-y-xs">
+          <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="inc-state">Affected State</label>
+          <select id="inc-state" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary/50 focus:border-secondary transition-all appearance-none">
+            <option>Maharashtra</option>
+            <option>Delhi</option>
+            <option>Karnataka</option>
+            <option>Tamil Nadu</option>
+            <option>Telangana</option>
+            <option>Gujarat</option>
+            <option>Uttar Pradesh</option>
+            <option>West Bengal</option>
+          </select>
+        </div>
+        <div class="space-y-xs">
+          <div class="flex justify-between items-center">
+            <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Impact Score</label>
+            <span class="font-label-sm text-label-sm text-secondary" id="score-val">7.5</span>
+          </div>
+          <input id="inc-score" class="w-full h-2 bg-surface-container-lowest rounded-lg appearance-none cursor-pointer border border-outline-variant" max="10" min="0" step="0.1" type="range" value="7.5" oninput="document.getElementById('score-val').textContent=parseFloat(this.value).toFixed(1)"/>
+          <div class="flex justify-between font-code-xs text-code-xs text-on-surface-variant">
+            <span>0 — Low</span><span>5 — Medium</span><span>10 — Critical</span>
+          </div>
+        </div>
+        <div class="space-y-xs">
+          <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="inc-desc">Description</label>
+          <textarea id="inc-desc" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary/50 focus:border-secondary transition-all placeholder:text-outline/50 resize-none" rows="2" placeholder="Brief description of the incident..."></textarea>
+        </div>
+        <div class="pt-md flex gap-md">
+          <button class="flex-1 py-4 bg-secondary-container text-on-secondary-container font-semibold rounded-lg flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all" type="submit" id="submit-btn">
+            <span class="material-symbols-outlined" id="submit-icon">publish</span>
+            <span id="submit-text">Log Secure Incident</span>
+          </button>
+          <button class="hidden px-md py-4 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-colors" type="button" id="cancel-edit-btn" onclick="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-2 gap-md">
+      <div class="glass-card p-md rounded-xl border-l-4 border-l-secondary">
+        <p class="font-label-sm text-label-sm text-on-surface-variant">TOTAL LOGS</p>
+        <p class="font-headline-lg text-headline-lg mt-1" id="stat-total">—</p>
+      </div>
+      <div class="glass-card p-md rounded-xl border-l-4 border-l-tertiary">
+        <p class="font-label-sm text-label-sm text-on-surface-variant">PENDING REVIEW</p>
+        <p class="font-headline-lg text-headline-lg mt-1 text-tertiary" id="stat-pending">—</p>
+      </div>
+      <div class="glass-card p-md rounded-xl border-l-4 border-l-error">
+        <p class="font-label-sm text-label-sm text-on-surface-variant">HIGH SEVERITY</p>
+        <p class="font-headline-lg text-headline-lg mt-1 text-error" id="stat-high">—</p>
+      </div>
+      <div class="glass-card p-md rounded-xl border-l-4 border-l-primary">
+        <p class="font-label-sm text-label-sm text-on-surface-variant">RESOLVED</p>
+        <p class="font-headline-lg text-headline-lg mt-1 text-primary" id="stat-resolved">—</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right: Incidents List -->
+  <section class="lg:col-span-7 space-y-lg">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-sm">
+        <div class="w-1 h-8 bg-primary rounded-full"></div>
+        <h2 class="font-headline-lg text-headline-lg">Incident Logs</h2>
+      </div>
+      <div class="flex items-center gap-sm">
+        <!-- Search -->
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+          <input id="search-input" class="bg-surface-container-lowest border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-on-surface focus:outline-none focus:border-secondary transition-all font-body-md text-sm w-40 focus:w-56" placeholder="Search..." type="text" oninput="debounceSearch()"/>
+        </div>
+        <!-- Filter -->
+        <select id="filter-severity" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-2 text-on-surface focus:outline-none text-sm appearance-none" onchange="loadIncidents()">
+          <option value="">All Severity</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Incidents List -->
+    <div class="space-y-md custom-scrollbar" id="incidents-list">
+      <div class="skeleton h-20 rounded-xl"></div>
+      <div class="skeleton h-20 rounded-xl"></div>
+      <div class="skeleton h-20 rounded-xl"></div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between pt-md" id="pagination-bar">
+      <span class="font-code-xs text-code-xs text-on-surface-variant" id="pagination-info">Loading...</span>
+      <div class="flex gap-xs" id="pagination-btns"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Bottom Nav (Mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/20 flex justify-around items-center h-20">
+  <a class="flex flex-col items-center justify-center text-on-surface-variant" href="/dashboard"><span class="material-symbols-outlined">home</span><span class="font-label-sm text-label-sm">Home</span></a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant" href="/predict"><span class="material-symbols-outlined">analytics</span><span class="font-label-sm text-label-sm">Predict</span></a>
+  <a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1" href="/admin"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">admin_panel_settings</span><span class="font-label-sm text-label-sm">Admin</span></a>
+</nav>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="hidden fixed inset-0 modal-backdrop z-[100] flex items-center justify-center p-md">
+  <div class="glass-card rounded-xl p-lg max-w-sm w-full space-y-lg">
+    <div class="flex items-center gap-sm">
+      <div class="w-10 h-10 rounded-lg bg-error-container/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-error">delete_forever</span>
+      </div>
+      <h3 class="font-title-md text-title-md text-on-surface">Delete Incident?</h3>
+    </div>
+    <p class="text-on-surface-variant text-sm" id="delete-modal-msg">This action cannot be undone and will be permanently removed from the secure log.</p>
+    <div class="flex gap-md">
+      <button onclick="closeDeleteModal()" class="flex-1 py-sm border border-outline-variant text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-colors font-label-sm text-label-sm">CANCEL</button>
+      <button onclick="confirmDelete()" id="confirm-delete-btn" class="flex-1 py-sm bg-error-container text-on-error-container rounded-lg hover:brightness-110 transition-all font-label-sm text-label-sm flex items-center justify-center gap-xs">
+        <span class="material-symbols-outlined text-sm">delete</span> DELETE
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast hidden font-label-sm text-label-sm"></div>
+
+<script>
+  Auth.checkAuth();
+  const user = Auth.getUser();
+  if (user) document.getElementById('user-name-chip').textContent = user.name + ' [' + user.role.toUpperCase() + ']';
+
+  let currentPage = 1;
+  let deleteTargetId = null;
+  let searchTimeout = null;
+  const SEVERITY_COLORS = { High: 'error', Medium: 'tertiary', Low: 'secondary' };
+  const SEVERITY_ICONS  = { High: 'warning', Medium: 'mail', Low: 'person_cancel' };
+  const CAT_ICONS = { 'Network Breach': 'security', 'Phishing Attack': 'mail', 'Ransomware': 'lock', 'Insider Threat': 'person_cancel', 'DNS Security': 'dns', 'Social Engineering': 'psychology' };
+
+  // ── Load Stats
+  async function loadStats() {
+    try {
+      const data = await Auth.apiRequest('/api/admin/stats');
+      document.getElementById('stat-total').textContent   = data.totalLogs.toLocaleString();
+      document.getElementById('stat-pending').textContent = data.pendingReview;
+      document.getElementById('stat-high').textContent    = data.highSeverity;
+      document.getElementById('stat-resolved').textContent = data.resolvedCount;
+    } catch (e) { console.error(e); }
+  }
+
+  // ── Load Incidents
+  async function loadIncidents(page = currentPage) {
+    currentPage = page;
+    const search   = document.getElementById('search-input').value.trim();
+    const severity = document.getElementById('filter-severity').value;
+    const params   = new URLSearchParams({ page, limit: 7, ...(search && { search }), ...(severity && { severity }) });
+
+    const list = document.getElementById('incidents-list');
+    list.innerHTML = '<div class="skeleton h-20 rounded-xl"></div>'.repeat(3);
+
+    try {
+      const data = await Auth.apiRequest(`/api/incidents?${params}`);
+      renderIncidents(data.incidents);
+      renderPagination(data.page, data.pages, data.total);
+    } catch (e) { console.error(e); showToast('Failed to load incidents', 'error'); }
+  }
+
+  function renderIncidents(incidents) {
+    const list = document.getElementById('incidents-list');
+    if (incidents.length === 0) {
+      list.innerHTML = `<div class="glass-card p-xl rounded-xl text-center text-on-surface-variant">
+        <span class="material-symbols-outlined text-4xl mb-sm block text-outline">search_off</span>
+        No incidents found matching your criteria.
+      </div>`;
+      return;
+    }
+    list.innerHTML = incidents.map(inc => {
+      const color  = SEVERITY_COLORS[inc.severity] || 'primary';
+      const icon   = SEVERITY_ICONS[inc.severity]  || 'info';
+      const catIcon = CAT_ICONS[inc.category] || 'security';
+      const fill   = inc.severity === 'High' ? "font-variation-settings:'FILL' 1;" : '';
+      const date   = new Date(inc.incident_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      return `
+        <div class="glass-card p-md rounded-xl hover:bg-surface-container-high/40 transition-all group slide-in" id="incident-row-${inc.id}">
+          <div class="flex flex-col md:flex-row md:items-center gap-md">
+            <div class="flex-shrink-0 w-12 h-12 bg-${color}/10 rounded-lg flex items-center justify-center border border-${color}/20">
+              <span class="material-symbols-outlined text-${color}" style="${fill}">${icon}</span>
+            </div>
+            <div class="flex-grow min-w-0">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <h4 class="font-title-md text-title-md truncate text-on-surface">${escHtml(inc.title)}</h4>
+                <span class="bg-${color}/20 text-${color} text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-tighter whitespace-nowrap">${inc.severity} Impact</span>
+                ${inc.status === 'Resolved' ? '<span class="bg-secondary/10 text-secondary text-[10px] px-2 py-0.5 rounded uppercase font-bold">Resolved</span>' : ''}
+              </div>
+              <div class="flex items-center gap-lg flex-wrap">
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">calendar_today</span>${date}
+                </span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">${catIcon}</span>${inc.category}
+                </span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">location_on</span>${inc.state}
+                </span>
+              </div>
+            </div>
+            <div class="flex md:flex-col items-center gap-2 flex-shrink-0">
+              <span class="font-code-xs text-code-xs text-secondary bg-secondary/10 px-2 py-1 rounded">Score: ${parseFloat(inc.impact_score).toFixed(1)}</span>
+              <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="editIncident(${inc.id})" class="p-2 hover:bg-surface-container-highest text-on-surface-variant rounded-md transition-colors" title="Edit">
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                </button>
+                <button onclick="openDeleteModal(${inc.id}, '${escHtml(inc.title).replace(/'/g,"\\'")}' )" class="p-2 hover:bg-error-container/20 text-error rounded-md transition-colors" title="Delete">
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderPagination(page, pages, total) {
+    document.getElementById('pagination-info').textContent = `Showing page ${page} of ${pages} (${total} records)`;
+    const btns = document.getElementById('pagination-btns');
+    btns.innerHTML = '';
+    const addBtn = (label, p, disabled = false) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      b.className = `px-sm py-1 rounded font-label-sm text-label-sm border ${p === page ? 'bg-secondary-container text-on-secondary-container border-secondary/30' : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-high'} transition-colors`;
+      b.disabled = disabled;
+      if (!disabled) b.onclick = () => loadIncidents(p);
+      btns.appendChild(b);
+    };
+    if (page > 1) addBtn('←', page - 1);
+    for (let i = Math.max(1, page - 1); i <= Math.min(pages, page + 1); i++) addBtn(i, i);
+    if (page < pages) addBtn('→', page + 1);
+  }
+
+  // ── Submit Incident (Create or Update)
+  async function submitIncident(e) {
+    e.preventDefault();
+    const editId = document.getElementById('edit-id').value;
+    const payload = {
+      title:         document.getElementById('inc-title').value.trim(),
+      incident_date: document.getElementById('inc-date').value,
+      category:      document.getElementById('inc-category').value,
+      state:         document.getElementById('inc-state').value,
+      impact_score:  parseFloat(document.getElementById('inc-score').value),
+      description:   document.getElementById('inc-desc').value.trim(),
+    };
+
+    const btn  = document.getElementById('submit-btn');
+    const icon = document.getElementById('submit-icon');
+    const text = document.getElementById('submit-text');
+    btn.disabled = true;
+    icon.textContent = 'hourglass_empty';
+    text.textContent = editId ? 'Updating...' : 'Logging...';
+
+    try {
+      if (editId) {
+        await Auth.apiRequest(`/api/incidents/${editId}`, { method: 'PUT', body: JSON.stringify(payload) });
+        showToast('Incident updated successfully', 'success');
+        cancelEdit();
+      } else {
+        await Auth.apiRequest('/api/incidents', { method: 'POST', body: JSON.stringify(payload) });
+        showToast('Incident logged to secure archive', 'success');
+        document.getElementById('incident-form').reset();
+        document.getElementById('inc-score').value = 7.5;
+        document.getElementById('score-val').textContent = '7.5';
+      }
+      await Promise.all([loadIncidents(1), loadStats()]);
+    } catch (err) {
+      showToast(err.message || 'Failed to save incident', 'error');
+    } finally {
+      btn.disabled = false;
+      icon.textContent = 'publish';
+      text.textContent = 'Log Secure Incident';
+    }
+  }
+
+  // ── Edit Incident
+  async function editIncident(id) {
+    try {
+      const { incident } = await Auth.apiRequest(`/api/incidents/${id}`);
+      document.getElementById('edit-id').value             = id;
+      document.getElementById('inc-title').value           = incident.title;
+      document.getElementById('inc-date').value            = incident.incident_date;
+      document.getElementById('inc-category').value        = incident.category;
+      document.getElementById('inc-state').value           = incident.state;
+      document.getElementById('inc-score').value           = incident.impact_score;
+      document.getElementById('score-val').textContent     = parseFloat(incident.impact_score).toFixed(1);
+      document.getElementById('inc-desc').value            = incident.description || '';
+      document.getElementById('form-title').textContent    = 'Edit Incident';
+      document.getElementById('submit-icon').textContent   = 'save';
+      document.getElementById('submit-text').textContent   = 'Save Changes';
+      document.getElementById('cancel-edit-btn').classList.remove('hidden');
+      document.querySelector('section').scrollIntoView({ behavior: 'smooth' });
+    } catch (err) { showToast('Failed to load incident', 'error'); }
+  }
+
+  function cancelEdit() {
+    document.getElementById('edit-id').value = '';
+    document.getElementById('incident-form').reset();
+    document.getElementById('inc-score').value           = 7.5;
+    document.getElementById('score-val').textContent     = '7.5';
+    document.getElementById('form-title').textContent    = 'Add New Incident';
+    document.getElementById('submit-icon').textContent   = 'publish';
+    document.getElementById('submit-text').textContent   = 'Log Secure Incident';
+    document.getElementById('cancel-edit-btn').classList.add('hidden');
+  }
+
+  // ── Delete Modal
+  function openDeleteModal(id, title) {
+    deleteTargetId = id;
+    document.getElementById('delete-modal-msg').textContent = `"${title}" will be permanently removed from the secure incident archive.`;
+    document.getElementById('delete-modal').classList.remove('hidden');
+  }
+  function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.add('hidden');
+    deleteTargetId = null;
+  }
+  async function confirmDelete() {
+    if (!deleteTargetId) return;
+    const btn = document.getElementById('confirm-delete-btn');
+    btn.disabled = true;
+    try {
+      await Auth.apiRequest(`/api/incidents/${deleteTargetId}`, { method: 'DELETE' });
+      showToast('Incident deleted from secure log', 'success');
+      closeDeleteModal();
+      await Promise.all([loadIncidents(), loadStats()]);
+    } catch (err) {
+      showToast(err.message || 'Delete failed', 'error');
+    } finally { btn.disabled = false; }
+  }
+
+  // ── Search Debounce
+  function debounceSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => loadIncidents(1), 400);
+  }
+
+  // ── Toast
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast font-label-sm text-label-sm ${type === 'error'
+      ? 'bg-error-container text-on-error-container border border-error/30'
+      : 'bg-secondary-container text-on-secondary-container border border-secondary/30'}`;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3500);
+  }
+
+  // ── Helpers
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Init
+  async function init() {
+    // Set today's date as default
+    document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
+    await Promise.all([loadStats(), loadIncidents(1)]);
+  }
+  init();
+</script>
+</body>
+</html>

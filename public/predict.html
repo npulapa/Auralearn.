@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Predict Risk | CyberRisk Predictor India</title>
+<meta name="description" content="AI-powered cyber risk prediction engine for Indian states and organizations."/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="/js/auth.js"></script>
+<script id="tailwind-config">
+  tailwind.config={darkMode:"class",theme:{extend:{
+    colors:{
+      "surface-container-lowest":"#010f1f","surface-container-low":"#0d1c2d","surface-container":"#122131",
+      "surface-container-high":"#1c2b3c","surface-container-highest":"#273647","surface-variant":"#273647",
+      "on-surface":"#d4e4fa","on-surface-variant":"#c6c6cd","outline":"#909097","outline-variant":"#45464d",
+      "primary":"#bec6e0","primary-container":"#0f172a","on-primary":"#283044","on-primary-container":"#798098",
+      "inverse-primary":"#565e74","primary-fixed":"#dae2fd","primary-fixed-dim":"#bec6e0","on-primary-fixed":"#131b2e","on-primary-fixed-variant":"#3f465c",
+      "secondary":"#4edea3","secondary-container":"#00a572","on-secondary":"#003824","on-secondary-container":"#00311f",
+      "tertiary":"#ffb690","tertiary-container":"#2d0e00","on-tertiary":"#552100","on-tertiary-container":"#d45d00",
+      "error":"#ffb4ab","error-container":"#93000a","on-error":"#690005","on-error-container":"#ffdad6",
+      "surface":"#051424","background":"#051424","on-background":"#d4e4fa",
+    },
+    borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},
+    spacing:{lg:"24px","container-padding":"20px",base:"4px",xl:"32px",xs:"8px",md:"16px",sm:"12px","stack-gap":"16px"},
+    fontFamily:{"headline-lg-mobile":["Inter"],"headline-lg":["Inter"],"body-md":["Inter"],"display-lg":["Inter"],"label-sm":["JetBrains Mono"],"code-xs":["JetBrains Mono"],"title-md":["Inter"]},
+    fontSize:{
+      "headline-lg-mobile":["24px",{lineHeight:"32px",fontWeight:"600"}],
+      "headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.01em",fontWeight:"600"}],
+      "body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],
+      "display-lg":["48px",{lineHeight:"56px",letterSpacing:"-0.02em",fontWeight:"700"}],
+      "label-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],
+      "code-xs":["11px",{lineHeight:"14px",fontWeight:"400"}],
+      "title-md":["20px",{lineHeight:"28px",fontWeight:"500"}],
+    }
+  }}}
+</script>
+<style>
+  body{background-color:#051424;color:#d4e4fa;font-family:'Inter',sans-serif;overflow-x:hidden;}
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+  .glass-card{background:rgba(18,33,49,0.75);backdrop-filter:blur(12px);border:1px solid rgba(51,65,85,0.5);box-shadow:inset 0 1px 1px rgba(255,255,255,0.05);}
+  .gauge-glow{filter:drop-shadow(0 0 8px rgba(255,182,144,0.5));}
+  .gauge-ring{transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1);}
+  .risk-gradient-text{background:linear-gradient(to right,#ffb690,#ffb4ab);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .low-gradient-text{background:linear-gradient(to right,#4edea3,#bec6e0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  @keyframes pulse-ring{0%{transform:scale(0.95);opacity:0.5}50%{transform:scale(1);opacity:0.8}100%{transform:scale(0.95);opacity:0.5}}
+  .animate-scan{animation:pulse-ring 3s infinite ease-in-out;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .slide-in{animation:slideIn 0.5s ease forwards;}
+  .results-locked{opacity:0.35;filter:grayscale(0.8) blur(2px);pointer-events:none;transition:all 0.7s;}
+  .results-unlocked{opacity:1;filter:none;pointer-events:all;}
+  .security-toggle{transition:all 0.2s;cursor:pointer;}
+  .security-toggle.selected{border-color:#bec6e0;background:rgba(190,198,224,0.1);}
+  .security-toggle.selected span:first-child{color:#bec6e0;}
+  .nav-link.active{color:#4edea3;}
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden pb-24 md:pb-0 md:pl-16">
+
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-container-padding h-16">
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/50 bg-secondary-container flex items-center justify-center">
+      <span class="material-symbols-outlined text-on-secondary text-sm" style="font-variation-settings:'FILL' 1;">shield_with_heart</span>
+    </div>
+    <h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">CyberRisk Predictor</h1>
+  </div>
+  <div class="flex items-center gap-sm">
+    <span id="user-name-chip" class="hidden md:block font-code-xs text-code-xs text-on-surface-variant"></span>
+    <button onclick="Auth.logout()" class="p-2 rounded-full hover:bg-surface-container-high/50 transition-colors text-on-surface-variant" title="Logout">
+      <span class="material-symbols-outlined">logout</span>
+    </button>
+  </div>
+</header>
+
+<!-- Desktop Sidebar -->
+<aside class="hidden md:flex fixed left-0 top-16 bottom-0 w-16 bg-surface-container flex-col items-center py-lg gap-lg border-r border-outline-variant/20">
+  <a class="nav-link p-2 text-on-surface-variant hover:text-primary transition-colors" href="/dashboard"><span class="material-symbols-outlined">home</span></a>
+  <a class="nav-link active p-2" href="/predict"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">analytics</span></a>
+  <div class="mt-auto">
+    <a class="nav-link p-2 text-on-surface-variant hover:text-primary transition-colors" href="/admin"><span class="material-symbols-outlined">admin_panel_settings</span></a>
+  </div>
+</aside>
+
+<main class="pt-24 px-container-padding max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-lg relative">
+
+  <!-- Input Section -->
+  <section class="lg:col-span-5 space-y-lg">
+    <div class="space-y-sm">
+      <h2 class="font-title-md text-title-md text-primary-fixed">Strategic Assessment</h2>
+      <p class="text-on-surface-variant text-label-sm font-label-sm uppercase tracking-wider">Predictive Parameters</p>
+    </div>
+
+    <div class="glass-card p-lg rounded-xl space-y-xl relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="space-y-md">
+        <!-- State Selection -->
+        <div class="space-y-xs">
+          <label class="font-label-sm text-label-sm text-on-surface-variant block">REGIONAL GEOGRAPHY (STATE)</label>
+          <div class="relative group">
+            <select id="state-select" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-on-surface">
+              <option value="maharashtra">Maharashtra</option>
+              <option value="delhi">Delhi (NCR)</option>
+              <option value="karnataka">Karnataka</option>
+              <option value="tamilnadu">Tamil Nadu</option>
+              <option value="telangana">Telangana</option>
+              <option value="gujarat">Gujarat</option>
+              <option value="rajasthan">Rajasthan</option>
+              <option value="up">Uttar Pradesh</option>
+              <option value="wb">West Bengal</option>
+              <option value="ap">Andhra Pradesh</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Organization Vertical -->
+        <div class="space-y-xs">
+          <label class="font-label-sm text-label-sm text-on-surface-variant block">ORGANIZATION VERTICAL</label>
+          <div class="relative group">
+            <select id="vertical-select" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-on-surface">
+              <option value="finance">BFSI (Finance & Banking)</option>
+              <option value="healthcare">Healthcare & Pharma</option>
+              <option value="government">Government & PSU</option>
+              <option value="energy">Energy & Infrastructure</option>
+              <option value="tech">Technology Services</option>
+              <option value="telecom">Telecommunications</option>
+              <option value="education">Education & Research</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">business_center</span>
+          </div>
+        </div>
+
+        <!-- Security Posture -->
+        <div class="space-y-xs">
+          <label class="font-label-sm text-label-sm text-on-surface-variant block">CURRENT DEFENSE POSTURE</label>
+          <div class="grid grid-cols-3 gap-xs">
+            <button class="security-toggle p-sm border border-outline-variant rounded-lg text-center" data-value="Basic" onclick="setSecurity(this)">
+              <span class="block font-label-sm text-label-sm">BASIC</span>
+              <span class="text-[10px] text-on-surface-variant/70">L1 Compliance</span>
+            </button>
+            <button class="security-toggle selected p-sm border rounded-lg text-center" data-value="Intermediate" onclick="setSecurity(this)">
+              <span class="block font-label-sm text-label-sm">INTERMEDIATE</span>
+              <span class="text-[10px] text-on-surface-variant/70">ISO 27001</span>
+            </button>
+            <button class="security-toggle p-sm border border-outline-variant rounded-lg text-center" data-value="Advanced" onclick="setSecurity(this)">
+              <span class="block font-label-sm text-label-sm">ADVANCED</span>
+              <span class="text-[10px] text-on-surface-variant/70">Zero Trust</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Run Button -->
+      <button id="predict-btn" class="w-full bg-secondary-container text-on-secondary-container font-semibold py-lg rounded-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-sm shadow-lg shadow-secondary-container/20" onclick="runPrediction()">
+        <span class="material-symbols-outlined" id="predict-icon">analytics</span>
+        <span id="predict-text">RUN RISK PREDICTION</span>
+        <div id="predict-spinner" class="hidden w-4 h-4 border-2 border-on-secondary-container/30 border-t-on-secondary-container rounded-full animate-spin"></div>
+      </button>
+    </div>
+
+    <!-- Context Card -->
+    <div id="context-card" class="glass-card p-md rounded-xl border-l-4 border-secondary flex items-start gap-md">
+      <span class="material-symbols-outlined text-secondary mt-1">info</span>
+      <div>
+        <p class="font-label-sm text-label-sm text-secondary uppercase">Regional Intelligence</p>
+        <p class="text-on-surface-variant text-sm mt-1 leading-relaxed" id="context-text">
+          High volume of phishing activity detected targeting financial hubs in Maharashtra during the current fiscal quarter.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section class="lg:col-span-7 space-y-lg results-locked" id="results-canvas">
+    <div class="flex justify-between items-end">
+      <div class="space-y-sm">
+        <h2 class="font-title-md text-title-md text-primary-fixed">Vulnerability Analysis</h2>
+        <p class="text-on-surface-variant text-label-sm font-label-sm uppercase tracking-wider">Engine Output v4.2</p>
+      </div>
+      <div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-xs">
+        <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+        LIVE MONITORING
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+      <!-- Risk Gauge -->
+      <div class="glass-card p-lg rounded-xl flex flex-col items-center justify-center space-y-md min-h-[320px] relative overflow-hidden">
+        <div class="relative w-48 h-48 flex items-center justify-center">
+          <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+            <circle class="text-surface-container-highest" cx="50" cy="50" fill="transparent" r="45" stroke="currentColor" stroke-width="4"/>
+            <circle id="gauge-ring" class="text-tertiary gauge-glow gauge-ring" cx="50" cy="50" fill="transparent" r="45" stroke="currentColor" stroke-dasharray="282.7" stroke-dashoffset="113" stroke-linecap="round" stroke-width="6"/>
+          </svg>
+          <div class="absolute flex flex-col items-center">
+            <span class="font-display-lg text-display-lg font-bold text-tertiary" id="risk-score">68</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant -mt-2" id="confidence-label">CONFIDENCE: 94%</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-tertiary risk-gradient-text" id="risk-level">CRITICAL RISK</h3>
+          <p class="text-on-surface-variant text-sm mt-1" id="risk-subtitle">Immediate action recommended</p>
+        </div>
+        <!-- Metadata -->
+        <div class="w-full grid grid-cols-2 gap-xs mt-sm">
+          <div class="bg-surface-container-low px-sm py-xs rounded-lg text-center">
+            <p class="font-code-xs text-code-xs text-on-surface-variant">REGIONAL THREATS</p>
+            <p class="font-label-sm text-label-sm text-primary" id="regional-threats">8.2k</p>
+          </div>
+          <div class="bg-surface-container-low px-sm py-xs rounded-lg text-center">
+            <p class="font-code-xs text-code-xs text-on-surface-variant">ACTIVE CVEs</p>
+            <p class="font-label-sm text-label-sm text-tertiary" id="cve-count">142</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="glass-card p-lg rounded-xl space-y-md">
+        <div class="flex justify-between items-center">
+          <h3 class="font-label-sm text-label-sm text-primary uppercase">Defensive Protocols</h3>
+          <span class="material-symbols-outlined text-primary text-sm">security</span>
+        </div>
+        <div class="space-y-sm" id="recommendations-list">
+          <!-- Populated by JS -->
+        </div>
+        <button onclick="downloadAdvisory()" class="w-full text-primary border border-primary/30 py-sm rounded-lg hover:bg-primary/10 transition-colors font-label-sm text-label-sm flex items-center justify-center gap-xs">
+          <span class="material-symbols-outlined text-sm">download</span>
+          DOWNLOAD FULL ADVISORY
+        </button>
+      </div>
+    </div>
+
+    <!-- Threat Intelligence -->
+    <div class="glass-card p-lg rounded-xl space-y-md">
+      <div class="flex justify-between items-center border-b border-outline-variant/30 pb-sm">
+        <h3 class="font-label-sm text-label-sm text-primary">RELEVANT THREAT INTELLIGENCE</h3>
+        <span class="text-code-xs font-code-xs text-secondary">SOURCE: CERT-IN</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-md" id="threat-intel-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Bottom Nav (Mobile) -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/20 flex justify-around items-center h-20 md:hidden">
+  <a class="flex flex-col items-center justify-center text-on-surface-variant" href="/dashboard"><span class="material-symbols-outlined">home</span><span class="font-label-sm text-label-sm">Home</span></a>
+  <a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1" href="/predict"><span class="material-symbols-outlined">analytics</span><span class="font-label-sm text-label-sm">Predict</span></a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant" href="/admin"><span class="material-symbols-outlined">admin_panel_settings</span><span class="font-label-sm text-label-sm">Admin</span></a>
+</nav>
+
+<!-- Loading Overlay -->
+<div class="fixed inset-0 bg-background/90 backdrop-blur-xl z-[100] hidden items-center justify-center" id="loading-overlay">
+  <div class="text-center space-y-lg">
+    <div class="relative inline-block">
+      <div class="w-24 h-24 rounded-full border-2 border-primary/20 border-t-primary animate-spin"></div>
+      <span class="material-symbols-outlined absolute inset-0 flex items-center justify-center text-primary text-4xl animate-scan">shield</span>
+    </div>
+    <div class="space-y-xs">
+      <p class="font-label-sm text-label-sm text-primary tracking-widest animate-pulse">ANALYZING PARAMETERS</p>
+      <p class="text-on-surface-variant text-xs" id="loading-step">Initializing analysis engine...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  Auth.checkAuth();
+  const user = Auth.getUser();
+  if (user) document.getElementById('user-name-chip').textContent = user.name;
+
+  let selectedPosture = 'Intermediate';
+  let lastResult = null;
+
+  function setSecurity(btn) {
+    document.querySelectorAll('.security-toggle').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedPosture = btn.dataset.value;
+  }
+
+  async function runPrediction() {
+    const state    = document.getElementById('state-select').value;
+    const vertical = document.getElementById('vertical-select').value;
+    const posture  = selectedPosture;
+
+    // Loading UI
+    const btn     = document.getElementById('predict-btn');
+    const icon    = document.getElementById('predict-icon');
+    const text    = document.getElementById('predict-text');
+    const spinner = document.getElementById('predict-spinner');
+    btn.disabled = true;
+    icon.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    text.textContent = 'ANALYZING...';
+
+    // Loading overlay steps
+    const overlay = document.getElementById('loading-overlay');
+    const steps = [
+      'Assessing regional threat intelligence...',
+      'Correlating vertical-specific CVE data...',
+      'Evaluating existing security controls...',
+      'Synthesizing risk confidence score...'
+    ];
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    let stepIdx = 0;
+    const stepInterval = setInterval(() => {
+      if (stepIdx < steps.length) {
+        document.getElementById('loading-step').textContent = steps[stepIdx++];
+      }
+    }, 700);
+
+    try {
+      const result = await Auth.apiRequest('/api/predict', {
+        method: 'POST',
+        body: JSON.stringify({ state, vertical, posture })
+      });
+      lastResult = result;
+      clearInterval(stepInterval);
+      overlay.classList.remove('flex');
+      overlay.classList.add('hidden');
+      renderResults(result);
+    } catch (err) {
+      clearInterval(stepInterval);
+      overlay.classList.remove('flex');
+      overlay.classList.add('hidden');
+      alert('Prediction failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      icon.classList.remove('hidden');
+      spinner.classList.add('hidden');
+      text.textContent = 'RUN RISK PREDICTION';
+    }
+  }
+
+  function renderResults(r) {
+    // Unlock results panel
+    const canvas = document.getElementById('results-canvas');
+    canvas.classList.remove('results-locked');
+    canvas.classList.add('results-unlocked', 'slide-in');
+
+    // Animate gauge
+    const circumference = 282.7;
+    const offset = circumference - (r.riskScore / 100) * circumference;
+    const ring = document.getElementById('gauge-ring');
+    ring.style.strokeDashoffset = offset;
+
+    // Update score & level
+    animateNumber('risk-score', 0, r.riskScore, 1200);
+    document.getElementById('confidence-label').textContent = `CONFIDENCE: ${r.confidence}%`;
+    document.getElementById('risk-level').textContent = r.riskLevel;
+
+    // Gauge color based on risk
+    if (r.riskScore >= 75) {
+      ring.classList.replace('text-tertiary', 'text-error');
+      ring.style.filter = 'drop-shadow(0 0 8px rgba(255,180,171,0.6))';
+      document.getElementById('risk-score').style.color = '#ffb4ab';
+    } else if (r.riskScore >= 50) {
+      ring.className = ring.className.replace(/text-\w+/, 'text-tertiary');
+    } else {
+      ring.classList.replace('text-tertiary', 'text-secondary');
+      document.getElementById('risk-score').style.color = '#4edea3';
+      document.getElementById('risk-level').className = 'font-headline-lg-mobile text-headline-lg-mobile text-secondary low-gradient-text';
+    }
+
+    document.getElementById('risk-subtitle').textContent =
+      r.riskScore >= 75 ? 'Immediate action recommended' :
+      r.riskScore >= 50 ? 'Enhanced monitoring required' : 'Maintain current posture';
+
+    document.getElementById('regional-threats').textContent = (r.regionalThreats / 1000).toFixed(1) + 'k';
+    document.getElementById('cve-count').textContent = r.cveCount;
+
+    // Context card
+    document.getElementById('context-text').textContent =
+      `Risk score of ${r.riskScore} detected for ${r.stateLabel} — ${r.verticalLabel} sector with ${r.postureLabel} security posture. ${r.cveCount} active CVEs tracked for this vertical.`;
+
+    // Recommendations
+    const recList = document.getElementById('recommendations-list');
+    recList.innerHTML = r.recommendations.map(rec => `
+      <div class="bg-surface-container-low/50 p-sm rounded-lg border-l-2 border-${rec.color} flex gap-sm group hover:bg-surface-container-high transition-colors">
+        <div class="w-8 h-8 rounded-sm bg-${rec.color}/10 flex items-center justify-center text-${rec.color} flex-shrink-0">
+          <span class="material-symbols-outlined text-sm">${rec.icon}</span>
+        </div>
+        <div>
+          <p class="font-label-sm text-label-sm text-on-surface">${rec.title}</p>
+          <p class="text-xs text-on-surface-variant">${rec.desc}</p>
+          <span class="text-[9px] font-bold uppercase text-${rec.color} opacity-70">${rec.priority}</span>
+        </div>
+      </div>`).join('');
+
+    // Threat Intel
+    const intelGrid = document.getElementById('threat-intel-grid');
+    intelGrid.innerHTML = r.threatIntel.map(t => {
+      const label = t.cve || t.actor ? (t.cve || `ACTOR: ${t.actor}`) : `IOC: ${t.ioc}`;
+      const color = t.severity === 'critical' ? 'tertiary' : t.severity === 'high' ? 'secondary' : 'primary';
+      return `<div class="space-y-xs">
+        <p class="text-code-xs text-${color}">${label}</p>
+        <p class="text-xs text-on-surface">${t.desc}</p>
+      </div>`;
+    }).join('');
+
+    canvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function animateNumber(id, from, to, duration) {
+    const el = document.getElementById(id);
+    const start = Date.now();
+    const tick = () => {
+      const p = Math.min(1, (Date.now() - start) / duration);
+      el.textContent = Math.round(from + (to - from) * p);
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function downloadAdvisory() {
+    if (!lastResult) return;
+    const r = lastResult;
+    const text = `
+DHARMA CYBER SENTINEL — RISK ADVISORY REPORT
+Generated: ${new Date(r.analysisTimestamp).toLocaleString()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ASSESSMENT PARAMETERS
+  State/Region:      ${r.stateLabel}
+  Sector/Vertical:   ${r.verticalLabel}
+  Security Posture:  ${r.postureLabel}
+
+RISK SCORING
+  CRI Score:         ${r.riskScore}/100
+  Risk Level:        ${r.riskLevel}
+  Confidence:        ${r.confidence}%
+  Regional Threats:  ${r.regionalThreats.toLocaleString()}
+  Active CVEs:       ${r.cveCount}
+
+DEFENSIVE PROTOCOLS
+${r.recommendations.map((rec, i) => `  ${i+1}. [${rec.priority}] ${rec.title}\n     ${rec.desc}`).join('\n')}
+
+THREAT INTELLIGENCE
+${r.threatIntel.map(t => `  • ${t.cve || t.actor || t.ioc || 'INDICATOR'}: ${t.desc}`).join('\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONFIDENTIAL — Digital Security Council of India
+Authorized Personnel Only
+    `.trim();
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `CyberRisk_Advisory_${r.stateLabel.replace(/\s/g,'_')}_${Date.now()}.txt`;
+    a.click();
+  }
+</script>
+</body>
+</html>

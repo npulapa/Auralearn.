@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | CyberRisk Predictor India</title>
+<meta name="description" content="Secure login portal for India Cyber Risk Predictor — Dharma Cyber Sentinel. Authorized access only."/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="/js/auth.js"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "surface-container-lowest": "#010f1f", "surface-container-low": "#0d1c2d",
+          "surface-container": "#122131", "surface-container-high": "#1c2b3c",
+          "surface-container-highest": "#273647", "surface-variant": "#273647",
+          "on-surface": "#d4e4fa", "on-surface-variant": "#c6c6cd",
+          "outline": "#909097", "outline-variant": "#45464d",
+          "primary": "#bec6e0", "primary-container": "#0f172a",
+          "on-primary": "#283044", "on-primary-container": "#798098",
+          "secondary": "#4edea3", "secondary-container": "#00a572",
+          "on-secondary": "#003824", "on-secondary-container": "#00311f",
+          "tertiary": "#ffb690", "tertiary-container": "#2d0e00",
+          "on-tertiary": "#552100", "on-tertiary-container": "#d45d00",
+          "error": "#ffb4ab", "error-container": "#93000a",
+          "on-error": "#690005", "on-error-container": "#ffdad6",
+          "surface": "#051424", "background": "#051424", "on-background": "#d4e4fa",
+          "surface-bright": "#2c3a4c", "surface-tint": "#bec6e0",
+          "inverse-surface": "#d4e4fa", "inverse-on-surface": "#233143",
+          "inverse-primary": "#565e74", "primary-fixed": "#dae2fd",
+          "primary-fixed-dim": "#bec6e0", "on-primary-fixed": "#131b2e",
+          "on-primary-fixed-variant": "#3f465c", "secondary-fixed": "#6ffbbe",
+          "secondary-fixed-dim": "#4edea3", "on-secondary-fixed": "#002113",
+          "on-secondary-fixed-variant": "#005236", "tertiary-fixed": "#ffdbca",
+          "tertiary-fixed-dim": "#ffb690", "on-tertiary-fixed": "#341100",
+          "on-tertiary-fixed-variant": "#783200",
+        },
+        borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
+        spacing: { lg: "24px", "container-padding": "20px", base: "4px", xl: "32px", xs: "8px", md: "16px", sm: "12px", "stack-gap": "16px" },
+        fontFamily: { "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "label-sm": ["JetBrains Mono"], "code-xs": ["JetBrains Mono"], "title-md": ["Inter"] },
+        fontSize: {
+          "headline-lg-mobile": ["24px", {lineHeight:"32px",fontWeight:"600"}],
+          "headline-lg": ["32px", {lineHeight:"40px",letterSpacing:"-0.01em",fontWeight:"600"}],
+          "body-md": ["16px", {lineHeight:"24px",fontWeight:"400"}],
+          "display-lg": ["48px", {lineHeight:"56px",letterSpacing:"-0.02em",fontWeight:"700"}],
+          "label-sm": ["12px", {lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],
+          "code-xs": ["11px", {lineHeight:"14px",fontWeight:"400"}],
+          "title-md": ["20px", {lineHeight:"28px",fontWeight:"500"}],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-panel { background: rgba(18,33,49,0.85); backdrop-filter: blur(16px); border: 1px solid rgba(51,65,85,0.5); }
+  .inner-glow { box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05); }
+  .scan-line { width:100%;height:2px;background:linear-gradient(90deg,transparent,#4edea3,transparent);position:absolute;top:0;animation:scan 3s linear infinite;z-index:10; }
+  @keyframes scan { 0%{top:0%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:100%;opacity:0} }
+  body { min-height: 100dvh; background: #051424; }
+  .grid-bg { background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 24px 24px; }
+  input:focus { box-shadow: 0 0 8px rgba(190,198,224,0.2); }
+  .btn-primary { background: #bec6e0; color: #283044; transition: all 0.2s; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-primary:active { transform: scale(0.98); }
+  .error-toast { background: rgba(147,0,10,0.9); border: 1px solid #ffb4ab; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  .fade-in { animation: fadeIn 0.3s ease forwards; }
+</style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-secondary/30 min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+
+<!-- Background -->
+<div class="absolute inset-0 opacity-10 pointer-events-none grid-bg"></div>
+<div class="absolute inset-0 bg-gradient-to-br from-surface via-surface to-surface-container-low opacity-90 pointer-events-none"></div>
+
+<!-- Ambient glow blobs -->
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-1/4 right-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+
+<!-- Error Toast -->
+<div id="error-toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 z-50 error-toast text-on-error-container px-6 py-3 rounded-xl font-label-sm text-label-sm flex items-center gap-xs fade-in">
+  <span class="material-symbols-outlined text-error text-sm">warning</span>
+  <span id="error-msg">Invalid credentials</span>
+</div>
+
+<main class="relative z-10 w-full max-w-[440px] px-container-padding flex flex-col gap-xl py-xl">
+  <!-- Brand -->
+  <div class="flex flex-col items-center text-center gap-base">
+    <div class="w-16 h-16 mb-md flex items-center justify-center rounded-xl bg-primary-container border border-outline-variant/30 inner-glow">
+      <span class="material-symbols-outlined text-secondary text-[40px]" style="font-variation-settings:'FILL' 1;">shield_with_heart</span>
+    </div>
+    <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">CyberRisk Predictor</h1>
+    <p class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">National Security Terminal — India</p>
+  </div>
+
+  <!-- Login Form -->
+  <div class="glass-panel inner-glow rounded-xl p-lg relative overflow-hidden">
+    <div class="scan-line hidden" id="biometric-scan"></div>
+
+    <form id="login-form" class="flex flex-col gap-lg">
+      <!-- Email -->
+      <div class="flex flex-col gap-xs">
+        <label class="font-label-sm text-label-sm text-on-surface-variant uppercase ml-1" for="email">Terminal ID / Email</label>
+        <div class="relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-md transition-colors group-focus-within:text-secondary">alternate_email</span>
+          <input class="w-full bg-surface-container-lowest border border-outline-variant/50 text-on-surface rounded-lg py-3 pl-12 pr-4 focus:ring-0 focus:border-secondary transition-all font-body-md" id="email" placeholder="admin@security.gov.in" type="email" value="admin@security.gov.in" autocomplete="email"/>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="flex flex-col gap-xs">
+        <div class="flex justify-between items-center px-1">
+          <label class="font-label-sm text-label-sm text-on-surface-variant uppercase" for="password">Encryption Key</label>
+          <a class="font-label-sm text-label-sm text-primary hover:text-secondary transition-colors" href="#">Forgot Access?</a>
+        </div>
+        <div class="relative group">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-md transition-colors group-focus-within:text-secondary">lock_open</span>
+          <input class="w-full bg-surface-container-lowest border border-outline-variant/50 text-on-surface rounded-lg py-3 pl-12 pr-12 focus:ring-0 focus:border-secondary transition-all font-body-md" id="password" placeholder="••••••••••••" type="password" value="Sentinel@123" autocomplete="current-password"/>
+          <button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" type="button" id="toggle-pw" aria-label="Toggle password visibility">
+            <span class="material-symbols-outlined text-md" id="pw-icon">visibility</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button id="login-btn" class="btn-primary w-full py-3.5 rounded-lg font-bold tracking-wide flex items-center justify-center gap-xs mt-base" type="submit">
+        <span id="btn-text">Initialize Session</span>
+        <span id="btn-spinner" class="hidden w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></span>
+        <span class="material-symbols-outlined text-md" id="btn-icon">arrow_forward</span>
+      </button>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-md py-base">
+        <div class="h-px flex-1 bg-outline-variant/30"></div>
+        <span class="font-label-sm text-label-sm text-outline-variant">OR SECURE BYPASS</span>
+        <div class="h-px flex-1 bg-outline-variant/30"></div>
+      </div>
+
+      <!-- Biometric -->
+      <button class="w-full border border-secondary/30 bg-secondary/5 py-3 rounded-lg text-secondary font-label-sm text-label-sm uppercase tracking-widest hover:bg-secondary/10 active:scale-[0.98] transition-all flex items-center justify-center gap-sm" onclick="triggerBiometric()" type="button">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">fingerprint</span>
+        Biometric Authentication
+      </button>
+    </form>
+  </div>
+
+  <!-- Footer Status -->
+  <div class="flex flex-col gap-md items-center">
+    <div class="flex gap-lg">
+      <div class="flex items-center gap-xs">
+        <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+        <span class="font-code-xs text-code-xs text-on-surface-variant uppercase">Nodes Online: 42/42</span>
+      </div>
+      <div class="flex items-center gap-xs">
+        <span class="material-symbols-outlined text-sm text-on-surface-variant">verified_user</span>
+        <span class="font-code-xs text-code-xs text-on-surface-variant uppercase">E2E Encrypted</span>
+      </div>
+    </div>
+    <p class="text-on-surface-variant/40 font-code-xs text-code-xs text-center max-w-[300px]">
+      Authorized access only. All sessions are monitored by the Digital Security Council of India.
+    </p>
+  </div>
+</main>
+
+<script>
+  // Redirect if already logged in
+  if (Auth.isLoggedIn()) window.location.href = '/dashboard';
+
+  // Toggle password visibility
+  document.getElementById('toggle-pw').addEventListener('click', () => {
+    const input = document.getElementById('password');
+    const icon  = document.getElementById('pw-icon');
+    if (input.type === 'password') { input.type = 'text'; icon.textContent = 'visibility_off'; }
+    else { input.type = 'password'; icon.textContent = 'visibility'; }
+  });
+
+  // Show error toast
+  function showError(msg) {
+    const toast = document.getElementById('error-toast');
+    document.getElementById('error-msg').textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 4000);
+  }
+
+  // Login form submission
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn      = document.getElementById('login-btn');
+    const btnText  = document.getElementById('btn-text');
+    const spinner  = document.getElementById('btn-spinner');
+    const btnIcon  = document.getElementById('btn-icon');
+
+    // Loading state
+    btn.disabled = true;
+    btnText.textContent = 'Authenticating...';
+    spinner.classList.remove('hidden');
+    btnIcon.classList.add('hidden');
+
+    try {
+      const data = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const result = await data.json();
+      if (!data.ok) throw new Error(result.error || 'Authentication failed');
+
+      Auth.setSession(result.token, result.user);
+      btnText.textContent = 'Session Active ✓';
+      btn.style.background = '#4edea3';
+      setTimeout(() => { window.location.href = '/dashboard'; }, 600);
+    } catch (err) {
+      showError(err.message || 'Authentication failed. Check credentials.');
+      btn.disabled = false;
+      btnText.textContent = 'Initialize Session';
+      spinner.classList.add('hidden');
+      btnIcon.classList.remove('hidden');
+    }
+  });
+
+  // Biometric simulation
+  function triggerBiometric() {
+    const scanner = document.getElementById('biometric-scan');
+    scanner.classList.remove('hidden');
+    setTimeout(() => {
+      scanner.classList.add('hidden');
+      // Auto-fill and submit
+      document.getElementById('email').value = 'admin@security.gov.in';
+      document.getElementById('password').value = 'Sentinel@123';
+      document.getElementById('login-form').dispatchEvent(new Event('submit'));
+    }, 2500);
+  }
+
+  // Glass card mouse effect
+  document.addEventListener('mousemove', (e) => {
+    document.querySelectorAll('.glass-panel').forEach(card => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    });
+  });
+</script>
+</body>
+</html>
